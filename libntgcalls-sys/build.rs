@@ -13,12 +13,13 @@ fn main() {
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    // this can fail when building with `--target` flag...
-    let target_dir = PathBuf::from(format!(
-        "{}/target/{}",
-        PathBuf::from(&manifest_dir).parent().unwrap().display(),
-        env::var("PROFILE").unwrap()
-    ));
+
+    // this a hacky solution and could fail but hey, it seem to work...
+    let target_dir = out_dir
+        .parent() // drop `out`
+        .and_then(Path::parent) // drop `libntgcalls-sys-*`
+        .and_then(Path::parent) // drop `build`
+        .expect("Failed to find target folder"); // we should be on {TARGET}/{PROFILE} now
 
     println!(
         "cargo:rustc-link-search={}",
@@ -26,15 +27,17 @@ fn main() {
     );
 
     #[cfg(feature = "bundled")]
-    bundled(&out_dir, &target_dir);
+    bundled(&out_dir, target_dir);
 }
 
 #[cfg(feature = "bundled")]
 fn bundled(out_dir: &std::path::Path, target_dir: &std::path::Path) {
     use std::process::Command;
 
+    let path: PathBuf;
+
     if let Ok(ntgcalls_path) = env::var("NTGCAllS_BUNDLE_DIR") {
-        println!("cargo:rustc-link-search={ntgcalls_path}");
+        path = PathBuf::from(ntgcalls_path);
     } else {
         assert!(
             ["windows", "linux", "macos"].contains(&std::env::consts::OS),
@@ -98,8 +101,10 @@ fn bundled(out_dir: &std::path::Path, target_dir: &std::path::Path) {
             panic!("Unpack bundled libraries failed")
         }
 
-        println!("cargo:rustc-link-search={}", out_dir.display());
+        path = out_dir.to_owned();
     }
+
+    println!("cargo:rustc-link-search={}", path.display());
 
     let file_name = if cfg!(target_os = "windows") {
         "ntgcalls.dll"
@@ -109,11 +114,8 @@ fn bundled(out_dir: &std::path::Path, target_dir: &std::path::Path) {
         "libntgcalls.dylib"
     };
 
-    std::fs::copy(
-        out_dir.join(file_name),
-        target_dir.parent().unwrap().join(file_name),
-    )
-    .expect("failed to copy lib file to target dir.");
+    std::fs::copy(path.join(file_name), target_dir.join(file_name))
+        .expect("failed to copy lib file to target dir.");
 
     println!("cargo:rustc-link-lib=ntgcalls");
 }

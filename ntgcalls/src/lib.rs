@@ -410,3 +410,30 @@ impl Drop for NTgCall {
         let _ = unsafe { ntg_destroy(self.0) };
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::NTgCall;
+
+    /// A test to make sure the binding works
+    #[test]
+    fn binding_working() {
+        let call0 = NTgCall::new();
+        let call1 = NTgCall::new();
+        let call2 = NTgCall::new();
+        let version = NTgCall::version();
+
+        assert_eq!(call0.0, 0);
+        assert_eq!(call1.0, 1);
+        assert_eq!(call2.0, 2);
+
+        call0.destroy().unwrap();
+        call1.destroy().unwrap();
+        call2.destroy().unwrap();
+
+        assert!(
+            !version.is_empty(),
+            "Version can't be empty, there was a problem in binding"
+        );
+    }
+}

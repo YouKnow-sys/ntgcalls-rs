@@ -14,6 +14,7 @@
 <p align="center">
   <a href="#features">Features</a> •
   <a href="#usage">Usage</a> •
+  <a href="#installation">Installation</a> •
   <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
 </p>
@@ -41,6 +42,13 @@ use ntgcalls::NTgCall;
 let ntgcalls = NTgCall::new();
 // use NTgCalls API...
 ```
+
+## Installation
+
+This crate will by default download the NTgCall precompiled shared library from github.
+You can change this behavior with environment variables:
+- `NTGCAllS_BUNDLE_DIR`: Don't download and instead use files from a local folder.
+- `NTGCAllS_BUNDLE_URL`: Download the precompiled library from this URL instead.
 
 ## Contributing
 
