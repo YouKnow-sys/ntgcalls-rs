@@ -1,26 +1,40 @@
-use std::mem::{transmute, MaybeUninit};
+use std::{
+    mem::{transmute, MaybeUninit},
+    ptr,
+};
 
 use libntgcalls_sys::{
     ntg_calls, ntg_calls_count, ntg_change_stream, ntg_connect, ntg_destroy, ntg_get_params,
-    ntg_get_state, ntg_get_version, ntg_init, ntg_mute, ntg_pause, ntg_resume, ntg_stop, ntg_time,
-    ntg_unmute, NTG_ERR_TOO_SMALL,
+    ntg_get_state, ntg_get_version, ntg_init, ntg_media_description_struct, ntg_mute, ntg_pause,
+    ntg_resume, ntg_stop, ntg_time, ntg_unmute, NTG_ERR_TOO_SMALL,
 };
 
 use errors::{DestroyError, NTgCallError, NTgCallResult};
 use structures::{GroupCall, MediaDescription, MediaState};
 use utils::IntoCString;
 
+use crate::structures::{AudioDescription, VideoDescription};
+
 pub mod enums;
 pub mod errors;
 pub mod structures;
 pub mod utils;
 
-/// NTgCall is a wrapper that wrap a instance of NTgCalls.
+/// NTgCall is a wrapper struct that encapsulates an instance of
+/// the NTgCalls API. It contains the identifier UID for the NTgCalls
+/// instance.
 pub struct NTgCall(u32);
 
 /// Initialization and De-Initialization
 impl NTgCall {
     /// Initialize a new NTgCall instance.
+    ///
+    /// ## Note
+    /// If you need multiple instance of [`NTgCall`] for multiple threads its better
+    /// to create all the instance in your main thread and then just pass them to other threads.
+    ///
+    /// ## Return
+    /// A new instance of the [`NTgCall`]
     #[allow(clippy::new_without_default)]
     #[must_use]
     pub fn new() -> Self {
@@ -105,7 +119,13 @@ impl NTgCall {
     pub fn get_params(&self, chat_id: i64, desc: MediaDescription) -> NTgCallResult<Vec<u8>> {
         let mut buf = vec![0; 512];
 
-        let ffi_desc = desc.to_ffi();
+        let audio = desc.audio.as_ref().map(AudioDescription::to_ffi);
+        let video = desc.video.as_ref().map(VideoDescription::to_ffi);
+
+        let ffi_desc = ntg_media_description_struct {
+            audio: audio.map_or(ptr::null(), |n| &n as *const _),
+            video: video.map_or(ptr::null(), |n| &n as *const _),
+        };
 
         let result =
             unsafe { ntg_get_params(self.0, chat_id, ffi_desc, transmute(buf.as_mut_ptr()), 512) };
@@ -165,7 +185,13 @@ impl NTgCall {
     /// - [`NTgCallError::ShellError`]
     /// - [`NTgCallError::UnknownException`]
     pub fn change_stream(&self, chat_id: i64, desc: MediaDescription) -> NTgCallResult<()> {
-        let ffi_desc = desc.to_ffi();
+        let audio = desc.audio.as_ref().map(AudioDescription::to_ffi);
+        let video = desc.video.as_ref().map(VideoDescription::to_ffi);
+
+        let ffi_desc = ntg_media_description_struct {
+            audio: audio.map_or(ptr::null(), |n| &n as *const _),
+            video: video.map_or(ptr::null(), |n| &n as *const _),
+        };
 
         let result = unsafe { ntg_change_stream(self.0, chat_id, ffi_desc) };
 

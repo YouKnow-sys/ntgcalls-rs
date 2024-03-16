@@ -19,9 +19,9 @@ jobs:
           - os: ubuntu-latest
             cibw_archs: "native"
             cibw_os_build: "manylinux_"
-          - os: arm64-server
-            cibw_archs: "aarch64"
-            cibw_os_build: "manylinux_"
+          # - os: arm64-server
+          #   cibw_archs: "aarch64"
+          #   cibw_os_build: "manylinux_"
           - os: windows-latest
             cibw_archs: "native"
           - os: macos-14

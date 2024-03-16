@@ -1,8 +1,7 @@
-use std::{ffi::CString, ptr};
+use std::ffi::CString;
 
 use libntgcalls_sys::{
-    ntg_audio_description_struct, ntg_input_mode_enum, ntg_media_description_struct,
-    ntg_video_description_struct,
+    ntg_audio_description_struct, ntg_input_mode_enum, ntg_video_description_struct,
 };
 
 use crate::{
@@ -17,22 +16,6 @@ pub struct MediaDescription {
     pub audio: Option<AudioDescription>,
     /// Video configuration for the stream.
     pub video: Option<VideoDescription>,
-}
-
-impl MediaDescription {
-    pub(crate) fn to_ffi(&self) -> ntg_media_description_struct {
-        let audio = self
-            .audio
-            .as_ref()
-            .map_or(ptr::null(), |r| &r.to_ffi() as *const _);
-
-        let video = self
-            .video
-            .as_ref()
-            .map_or(ptr::null(), |r| &r.to_ffi() as *const _);
-
-        ntg_media_description_struct { audio, video }
-    }
 }
 
 /// Stream’s Audio Configuration

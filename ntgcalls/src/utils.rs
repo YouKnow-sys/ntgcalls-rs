@@ -2,6 +2,7 @@ use std::ffi::{CStr, CString};
 
 /// A helper trait to convert multiple strings type to CString to be used with ntg library
 pub trait IntoCString {
+    /// convert the string to CString, this operation shouldn't fail.
     fn into_c_string(self) -> CString;
 }
 

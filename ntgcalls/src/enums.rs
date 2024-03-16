@@ -25,6 +25,8 @@ pub enum StreamStatus {
 }
 
 /// Enumeration of stream type values.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[repr(i32)]
 pub enum StreamType {
     /// Indicates that the stream type is audio.
     Audio = 0,
