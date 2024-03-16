@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Media Configuration for the Stream.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct MediaDescription {
     /// Audio configuration for the stream.
     pub audio: Option<AudioDescription>,

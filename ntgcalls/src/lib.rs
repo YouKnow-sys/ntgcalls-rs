@@ -116,7 +116,7 @@ impl NTgCall {
     /// - [`NTgCallError::FFmpegNotFound`]
     /// - [`NTgCallError::ShellError`]
     /// - [`NTgCallError::UnknownException`]
-    pub fn get_params(&self, chat_id: i64, desc: MediaDescription) -> NTgCallResult<Vec<u8>> {
+    pub fn get_params(&self, chat_id: i64, desc: MediaDescription) -> NTgCallResult<String> {
         let mut buf = vec![0; 512];
 
         let audio = desc.audio.as_ref().map(AudioDescription::to_ffi);
@@ -139,7 +139,9 @@ impl NTgCall {
             return Err(NTgCallError::from(result));
         }
 
-        Ok(buf)
+        Ok(String::from_utf8(buf).expect(
+            "GetParams function returned invalid string. this is a internal error, report it",
+        ))
     }
 
     /// This method allow stopping a WebRTC connection.
