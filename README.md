@@ -1,8 +1,51 @@
-# NTgCall-rs
-A simple safe binding for NTgCalls C api.
+<h1 align="center">Decima Localization Manager</h1>
 
-## Todo
-- [ ] Add support for linking NTgCalls lib statically when NTgCalls added it.
-- [x] Add support for downloading precompiled NTgCalls lib if a feature flag is enabled instead of putting the lib directly in the project. (kinda done, but im just hardcoding a version at this point and also including a lib file)
-- [ ] Clean up the code.
-- [x] Copy the shared lib to output folder after build for each platform. (can get buggy if build for multiplatform)
+<p align="center">
+  <b>NTgCalls-rs is a Rust binding for the NTgCalls C API. It provides a safe interface for using the NTgCalls library in Rust.</b></br>
+</p>
+
+<div align="center">
+
+[![Build Status](https://github.com/YouKnow-sys/ntgcalls-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/YouKnow-sys/ntgcalls-rs/actions?workflow=Rust%20CI)
+[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/YouKnow-sys/ntgcalls-rs/blob/master/LICENSE-MIT)
+
+</div>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#contributing">Contributing</a> •
+  <a href="#license">License</a>
+</p>
+
+## Features
+
+- Safe Rust interface for NTgCalls
+- Automatic linking of NTgCalls shared library
+- Cross-platform support
+
+## Usage
+
+Add this to your Cargo.toml:
+
+```toml
+[dependencies]
+ntgcall-rs = "0.1.0"
+```
+
+Then you can use the NTgCalls API:
+
+```rust
+use ntgcalls::NTgCall;
+
+let ntgcalls = NTgCall::new();
+// use NTgCalls API...
+```
+
+## Contributing
+
+Contributions are welcome! Please open an issue or PR.
+
+## License
+
+This project is licensed under the MIT license. See [LICENSE](LICENSE-MIT) for more details.
