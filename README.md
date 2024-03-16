@@ -1,4 +1,4 @@
-<h1 align="center">NTgCall-rs</h1>
+<h1 align="center">NTgCalls-rs</h1>
 
 <p align="center">
   <b>NTgCalls-rs is a Rust binding for the <a href="https://github.com/pytgcalls/ntgcalls">NTgCalls</a> C API. It provides a safe interface for using the NTgCalls library in Rust.</b></br>
@@ -30,7 +30,7 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-ntgcall-rs = { git = "https://github.com/YouKnow-sys/ntgcalls-rs.git" } # not yet released to crates.io
+ntgcalls = { git = "https://github.com/YouKnow-sys/ntgcalls-rs.git" } # not yet released to crates.io
 ```
 
 Then you can use the NTgCalls API:
