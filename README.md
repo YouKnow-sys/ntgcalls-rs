@@ -30,7 +30,7 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-ntgcall-rs = "0.1.0"
+ntgcall-rs = { git = "https://github.com/YouKnow-sys/ntgcalls-rs.git" } # not yet released to crates.io
 ```
 
 Then you can use the NTgCalls API:
