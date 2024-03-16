@@ -1,0 +1,11 @@
+[package]
+name = "ntgcalls"
+version = "0.1.0"
+description = "High level binding for the NTgCalls library"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+libntgcalls-sys = { path = "../libntgcalls-sys" }
