@@ -24,9 +24,9 @@ jobs:
           #   cibw_os_build: "manylinux_"
           - os: windows-latest
             cibw_archs: "native"
-          - os: macos-14
-            cibw_archs: "arm64"
-            cibw_os_build: "macosx_arm64"
+          # - os: macos-14
+          #   cibw_archs: "arm64"
+          #   cibw_os_build: "macosx_arm64"
 
     steps:
       - name: Checkout repository

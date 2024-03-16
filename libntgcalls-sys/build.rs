@@ -40,7 +40,7 @@ fn bundled(out_dir: &std::path::Path, target_dir: &std::path::Path) {
         path = PathBuf::from(ntgcalls_path);
     } else {
         assert!(
-            ["windows", "linux", "macos"].contains(&std::env::consts::OS),
+            ["windows", "linux"].contains(&std::env::consts::OS),
             "Unsupported os (`{}`) for bundled lib.",
             std::env::consts::OS
         );
