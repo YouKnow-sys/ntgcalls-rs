@@ -1,4 +1,4 @@
-<h1 align="center">Decima Localization Manager</h1>
+<h1 align="center">NTgCall-rs</h1>
 
 <p align="center">
   <b>NTgCalls-rs is a Rust binding for the <a href="https://github.com/pytgcalls/ntgcalls">NTgCalls</a> C API. It provides a safe interface for using the NTgCalls library in Rust.</b></br>
