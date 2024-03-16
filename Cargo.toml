@@ -16,3 +16,6 @@ codegen-units = 1
 lto = "fat"
 opt-level = "s"
 strip = "symbols"
+
+[profile.dev]
+rpath = true
