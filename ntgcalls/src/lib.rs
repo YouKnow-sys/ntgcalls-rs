@@ -1,6 +1,7 @@
 use std::{
     mem::{transmute, MaybeUninit},
     ptr,
+    sync::Arc,
 };
 
 use libntgcalls_sys::{
@@ -20,10 +21,15 @@ pub mod errors;
 pub mod structures;
 pub mod utils;
 
+struct NTgCallInner(u32);
+
 /// NTgCall is a wrapper struct that encapsulates an instance of
 /// the NTgCalls API. It contains the identifier UID for the NTgCalls
 /// instance.
-pub struct NTgCall(u32);
+#[derive(Clone)]
+pub struct NTgCall {
+    inner: Arc<NTgCallInner>,
+}
 
 /// Initialization and De-Initialization
 impl NTgCall {
@@ -38,12 +44,14 @@ impl NTgCall {
     #[allow(clippy::new_without_default)]
     #[must_use]
     pub fn new() -> Self {
-        Self(unsafe { ntg_init() })
+        Self {
+            inner: Arc::new(NTgCallInner(unsafe { ntg_init() })),
+        }
     }
 
     /// Clean up and release the resources used by NTgCalls
     pub fn destroy(self) -> Result<(), DestroyError> {
-        let result = unsafe { ntg_destroy(self.0) };
+        let result = unsafe { ntg_destroy(self.inner.0) };
 
         if result != 0 {
             return Err(DestroyError);
@@ -90,7 +98,7 @@ impl NTgCall {
     pub fn connect<S: IntoCString>(&self, chat_id: i64, params: S) -> NTgCallResult<()> {
         let params = params.into_c_string();
 
-        let result = unsafe { ntg_connect(self.0, chat_id, params.into_raw()) };
+        let result = unsafe { ntg_connect(self.inner.0, chat_id, params.into_raw()) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -127,8 +135,15 @@ impl NTgCall {
             video: video.map_or(ptr::null(), |n| &n as *const _),
         };
 
-        let result =
-            unsafe { ntg_get_params(self.0, chat_id, ffi_desc, transmute(buf.as_mut_ptr()), 512) };
+        let result = unsafe {
+            ntg_get_params(
+                self.inner.0,
+                chat_id,
+                ffi_desc,
+                transmute(buf.as_mut_ptr()),
+                512,
+            )
+        };
 
         assert_ne!(
             result, NTG_ERR_TOO_SMALL,
@@ -157,7 +172,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn stop(&self, chat_id: i64) -> NTgCallResult<()> {
-        let result = unsafe { ntg_stop(self.0, chat_id) };
+        let result = unsafe { ntg_stop(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -195,7 +210,7 @@ impl NTgCall {
             video: video.map_or(ptr::null(), |n| &n as *const _),
         };
 
-        let result = unsafe { ntg_change_stream(self.0, chat_id, ffi_desc) };
+        let result = unsafe { ntg_change_stream(self.inner.0, chat_id, ffi_desc) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -219,7 +234,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn mute(&self, chat_id: i64) -> NTgCallResult<bool> {
-        let result = unsafe { ntg_mute(self.0, chat_id) };
+        let result = unsafe { ntg_mute(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -243,7 +258,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn pause(&self, chat_id: i64) -> NTgCallResult<bool> {
-        let result = unsafe { ntg_pause(self.0, chat_id) };
+        let result = unsafe { ntg_pause(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -267,7 +282,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn resume(&self, chat_id: i64) -> NTgCallResult<bool> {
-        let result = unsafe { ntg_resume(self.0, chat_id) };
+        let result = unsafe { ntg_resume(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -289,7 +304,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn played_time(&self, chat_id: i64) -> NTgCallResult<i64> {
-        let result = unsafe { ntg_time(self.0, chat_id) };
+        let result = unsafe { ntg_time(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result as i32));
@@ -313,7 +328,7 @@ impl NTgCall {
     /// - [`NTgCallError::ConnectionNotFound`]
     /// - [`NTgCallError::UnknownException`]
     pub fn unmute(&self, chat_id: i64) -> NTgCallResult<bool> {
-        let result = unsafe { ntg_unmute(self.0, chat_id) };
+        let result = unsafe { ntg_unmute(self.inner.0, chat_id) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -334,7 +349,7 @@ impl NTgCall {
     /// - [`NTgCallError::InvalidUid`]
     /// - [`NTgCallError::UnknownException`]
     pub fn count_calls(&self) -> NTgCallResult<i32> {
-        let result = unsafe { ntg_calls_count(self.0) };
+        let result = unsafe { ntg_calls_count(self.inner.0) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -357,7 +372,7 @@ impl NTgCall {
 
         let mut buffer = Vec::with_capacity(count as usize);
 
-        let result = unsafe { ntg_calls(self.0, buffer.as_mut_ptr(), count) };
+        let result = unsafe { ntg_calls(self.inner.0, buffer.as_mut_ptr(), count) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -389,7 +404,7 @@ impl NTgCall {
     pub fn get_state(&self, chat_id: i64) -> NTgCallResult<MediaState> {
         let mut buffer = MaybeUninit::uninit();
 
-        let result = unsafe { ntg_get_state(self.0, chat_id, buffer.as_mut_ptr()) };
+        let result = unsafe { ntg_get_state(self.inner.0, chat_id, buffer.as_mut_ptr()) };
 
         if result.is_negative() {
             return Err(NTgCallError::from(result));
@@ -405,7 +420,7 @@ impl NTgCall {
     }
 }
 
-impl Drop for NTgCall {
+impl Drop for NTgCallInner {
     // Clean up and release all the resource allocated by the instance.
     fn drop(&mut self) {
         // if this ever fail we leak memory...
@@ -415,19 +430,24 @@ impl Drop for NTgCall {
 
 #[cfg(test)]
 mod test {
-    use crate::NTgCall;
+    use crate::{structures::MediaDescription, NTgCall};
+
+    #[test]
+    fn test_all_sequential() {
+        binding_working();
+        clone();
+    }
 
     /// A test to make sure the binding works
-    #[test]
     fn binding_working() {
         let call0 = NTgCall::new();
         let call1 = NTgCall::new();
         let call2 = NTgCall::new();
         let version = NTgCall::version();
 
-        assert_eq!(call0.0, 0);
-        assert_eq!(call1.0, 1);
-        assert_eq!(call2.0, 2);
+        assert_eq!(call0.inner.0, 0);
+        assert_eq!(call1.inner.0, 1);
+        assert_eq!(call2.inner.0, 2);
 
         call0.destroy().unwrap();
         call1.destroy().unwrap();
@@ -437,5 +457,23 @@ mod test {
             !version.is_empty(),
             "Version can't be empty, there was a problem in binding"
         );
+    }
+
+    fn clone() {
+        let call = NTgCall::new();
+
+        let call2 = call.clone();
+        let call3 = call.clone();
+
+        // drop one of instance, other instance should still be valid
+        drop(call);
+
+        // check if the instance is still valid
+        let params = call2.get_params(123, MediaDescription::default()).unwrap();
+        assert!(!params.is_empty());
+
+        call3.destroy().unwrap();
+
+        assert!(call2.destroy().is_err());
     }
 }

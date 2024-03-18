@@ -10,7 +10,7 @@ use libntgcalls_sys::{
 pub type NTgCallResult<T> = Result<T, NTgCallError>;
 
 /// All errors related to NTgCalls
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 #[repr(i32)]
 pub enum NTgCallError {
     /// A connection with the specified ID already exists.
